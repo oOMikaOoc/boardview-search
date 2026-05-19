@@ -127,6 +127,48 @@
         .grid { display: grid; gap: 12px; }
         .stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
         .stat strong { display: block; font-size: 27px; }
+        .support-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 13px 14px;
+            text-align: center;
+            background:
+                radial-gradient(circle at 18% 30%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 36%),
+                radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--danger) 5%, transparent), transparent 38%),
+                color-mix(in srgb, var(--panel) 96%, var(--bg));
+        }
+        .support-title {
+            color: var(--text);
+            font-weight: 800;
+        }
+        .support-title span {
+            color: var(--accent);
+        }
+        .support-copy {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.35;
+        }
+        .support-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 7px 12px;
+            border-radius: 7px;
+            background: #ffdd00;
+            color: #191919;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .support-button:hover {
+            background: #f4c900;
+            text-decoration: none;
+        }
         form.inline, form.search {
             display: grid;
             grid-template-columns: minmax(240px, 1fr) 190px auto;
