@@ -167,3 +167,18 @@ Prévisualisation :
 - passe par `/view/<file_id>`
 - télécharge à la demande si nécessaire
 - prend en charge les PDF, images et fichiers texte
+
+## Communauté
+
+Vous connaissez un canal Telegram utile pour la réparation, les boardviews ou les schémas ? Les suggestions de sources et les retours d'utilisation sont les bienvenus via Discord :
+
+```text
+https://discord.gg/RbZMajrDRD
+```
+
+Retrouvez aussi mes liens et moyens de soutien ici :
+
+```text
+https://linkvault.hackncraft.fr/p/oomikaooc
+https://buymeacoffee.com/oomikaooc
+```

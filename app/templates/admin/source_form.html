@@ -13,8 +13,8 @@
         </label>
         <label>Nom<input name="name" value="{{ source.name if source else '' }}" required></label>
         <label>Identifiant / chemin<input id="source-identifier" name="identifier" value="{{ source.identifier if source else '' }}" placeholder="schematicslaptop, @canal, C:\Schemas ou \\serveur\share" required></label>
-        <label>Messages Telegram a scanner<input name="max_messages_to_scan" type="number" min="0" step="100" value="{{ source.max_messages_to_scan if source else '' }}" placeholder="defaut .env, ignore pour local"></label>
-        <div class="telegram-count" id="telegram-count-box" data-count-url="{{ admin_url('admin.telegram_message_count') }}">
+        <label>Messages Telegram a scanner<input id="telegram-scan-limit" name="max_messages_to_scan" type="number" min="0" step="100" value="{{ source.max_messages_to_scan if source else '' }}" placeholder="defaut .env, ignore pour local"></label>
+        <div class="telegram-count" id="telegram-count-box" data-count-url="{{ admin_url('admin.telegram_message_count') }}" data-channel-count="{{ telegram_count if telegram_count is not none else '' }}">
             <div class="telegram-count-item">
                 <span class="muted">Messages disponibles dans le canal</span>
                 <strong id="telegram-count-value">
@@ -44,6 +44,10 @@
             <span class="muted" id="telegram-count-detail">
                 {% if telegram_count_error %}{{ telegram_count_error }}{% endif %}
             </span>
+            <div class="telegram-count-note">
+                <strong>Ce qui sera fait</strong>
+                <span id="telegram-scan-summary">L'indexation parcourt les messages Telegram dans la limite configuree, enregistre uniquement les metadonnees des messages avec fichier, et ne telecharge aucun fichier complet.</span>
+            </div>
         </div>
         <label><input name="enabled" type="checkbox" value="1" {% if not source or source.enabled %}checked{% endif %}> Active</label>
         <button type="submit">Enregistrer</button>

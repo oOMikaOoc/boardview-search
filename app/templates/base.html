@@ -217,6 +217,20 @@
         .telegram-count strong {
             font-size: 18px;
         }
+        .telegram-count-note {
+            flex: 1 1 100%;
+            display: grid;
+            gap: 4px;
+            padding-top: 8px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+        .telegram-count-note strong {
+            color: var(--text);
+            font-size: 13px;
+        }
         .telegram-count.hidden {
             display: none;
         }
@@ -326,6 +340,29 @@
             box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
         }
         .toast.visible { display: block; }
+        footer {
+            width: min(1220px, calc(100% - 32px));
+            margin: 18px auto 26px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .footer-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            font-weight: 700;
+        }
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -356,6 +393,16 @@
     </header>
     {% block content %}{% endblock %}
 </main>
+<footer>
+    <div class="footer-inner">
+        <span>Boardview Search par oOMikaOoc - proposez de nouvelles sources et suivez les mises a jour.</span>
+        <div class="footer-links">
+            <a href="https://discord.gg/RbZMajrDRD" target="_blank" rel="noopener noreferrer">Discord</a>
+            <a href="https://linkvault.hackncraft.fr/p/oomikaooc" target="_blank" rel="noopener noreferrer">Liens</a>
+            <a href="https://buymeacoffee.com/oomikaooc" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+        </div>
+    </div>
+</footer>
 <div class="modal-backdrop" id="download-modal" role="status" aria-live="polite">
     <div class="modal">
         <p class="modal-title">Telechargement en cours</p>
@@ -606,20 +653,50 @@
 
     const sourceType = document.getElementById("source-type");
     const sourceIdentifier = document.getElementById("source-identifier");
+    const telegramScanLimit = document.getElementById("telegram-scan-limit");
     const telegramCountBox = document.getElementById("telegram-count-box");
     const telegramCountValue = document.getElementById("telegram-count-value");
     const telegramCountDetail = document.getElementById("telegram-count-detail");
     const telegramCountRefresh = document.getElementById("telegram-count-refresh");
+    const telegramScanSummary = document.getElementById("telegram-scan-summary");
     function syncTelegramCountVisibility() {
         if (!sourceType || !telegramCountBox) return;
         telegramCountBox.classList.toggle("hidden", sourceType.value !== "telegram");
+        updateTelegramScanSummary();
     }
     function formatCount(value) {
         return new Intl.NumberFormat("fr-FR").format(Number(value || 0));
     }
+    function updateTelegramScanSummary() {
+        if (!telegramScanSummary) return;
+        const channelCount = Number(telegramCountBox?.dataset.channelCount || 0);
+        const limit = Number(telegramScanLimit?.value || 0);
+
+        if (sourceType && sourceType.value !== "telegram") {
+            telegramScanSummary.textContent = "Ce reglage est ignore pour les dossiers locaux.";
+            return;
+        }
+
+        if (channelCount > 0 && limit > 0) {
+            const scanned = Math.min(channelCount, limit);
+            telegramScanSummary.textContent = `Le canal contient environ ${formatCount(channelCount)} message(s). L'indexation parcourra les ${formatCount(scanned)} plus recents selon la limite configuree, enregistrera uniquement les metadonnees des messages avec fichier, et ne telechargera aucun fichier complet.`;
+            return;
+        }
+
+        if (channelCount > 0) {
+            telegramScanSummary.textContent = `Le canal contient environ ${formatCount(channelCount)} message(s). Sans limite specifique, l'indexation utilisera la limite par defaut du fichier .env, enregistrera uniquement les metadonnees des messages avec fichier, et ne telechargera aucun fichier complet.`;
+            return;
+        }
+
+        telegramScanSummary.textContent = "L'indexation parcourt les messages Telegram dans la limite configuree, enregistre uniquement les metadonnees des messages avec fichier, et ne telecharge aucun fichier complet.";
+    }
     if (sourceType) {
         sourceType.addEventListener("change", syncTelegramCountVisibility);
         syncTelegramCountVisibility();
+    }
+    if (telegramScanLimit) {
+        telegramScanLimit.addEventListener("input", updateTelegramScanSummary);
+        updateTelegramScanSummary();
     }
     if (telegramCountRefresh && telegramCountBox && sourceIdentifier) {
         telegramCountRefresh.addEventListener("click", async () => {
@@ -637,11 +714,15 @@
                 const response = await fetch(url);
                 const payload = await response.json();
                 if (!response.ok) throw new Error(payload.error || "Comptage impossible");
+                telegramCountBox.dataset.channelCount = String(payload.count || 0);
                 if (telegramCountValue) telegramCountValue.textContent = formatCount(payload.count);
                 if (telegramCountDetail) telegramCountDetail.textContent = "Total recupere depuis Telegram.";
+                updateTelegramScanSummary();
             } catch (error) {
+                telegramCountBox.dataset.channelCount = "";
                 if (telegramCountValue) telegramCountValue.textContent = "indisponible";
                 if (telegramCountDetail) telegramCountDetail.textContent = error.message;
+                updateTelegramScanSummary();
             } finally {
                 telegramCountRefresh.disabled = false;
                 telegramCountRefresh.textContent = "Actualiser";
