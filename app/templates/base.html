@@ -342,26 +342,70 @@
         .toast.visible { display: block; }
         footer {
             width: min(1220px, calc(100% - 32px));
-            margin: 18px auto 26px;
-            padding-top: 14px;
-            border-top: 1px solid var(--line);
+            margin: 22px auto 28px;
+            padding: 24px 18px 20px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background:
+                radial-gradient(circle at 18% 30%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 32%),
+                radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--danger) 10%, transparent), transparent 34%),
+                color-mix(in srgb, var(--panel) 92%, var(--bg));
             color: var(--muted);
-            font-size: 13px;
+            font-size: 14px;
         }
         .footer-inner {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            text-align: center;
         }
-        .footer-links {
+        .footer-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--text);
+            font-weight: 800;
+            font-size: 17px;
+        }
+        .footer-brand span {
+            color: var(--accent);
+        }
+        .footer-actions {
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            gap: 8px;
             flex-wrap: wrap;
         }
-        .footer-links a {
+        .footer-actions a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 7px 11px;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            background: color-mix(in srgb, var(--panel) 84%, var(--bg));
+            color: var(--text);
             font-weight: 700;
+        }
+        .footer-actions a:hover {
+            border-color: var(--accent);
+            text-decoration: none;
+        }
+        .footer-support {
+            background: #ffdd00 !important;
+            border-color: #ffdd00 !important;
+            color: #191919 !important;
+        }
+        .footer-meta {
+            display: flex;
+            gap: 7px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .footer-meta strong {
+            color: var(--text);
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -395,11 +439,16 @@
 </main>
 <footer>
     <div class="footer-inner">
-        <span>Boardview Search par oOMikaOoc - proposez de nouvelles sources et suivez les mises a jour.</span>
-        <div class="footer-links">
-            <a href="https://discord.gg/RbZMajrDRD" target="_blank" rel="noopener noreferrer">Discord</a>
-            <a href="https://linkvault.hackncraft.fr/p/oomikaooc" target="_blank" rel="noopener noreferrer">Liens</a>
-            <a href="https://buymeacoffee.com/oomikaooc" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+        <a class="footer-brand" href="https://linkvault.hackncraft.fr/p/oomikaooc" target="_blank" rel="noopener noreferrer">Boardview Search <span>by oOMikaOoc</span></a>
+        <div class="footer-actions">
+            <a href="https://discord.gg/RbZMajrDRD" target="_blank" rel="noopener noreferrer">Proposer une source</a>
+            <a href="https://linkvault.hackncraft.fr/p/oomikaooc" target="_blank" rel="noopener noreferrer">Tous mes liens</a>
+            <a class="footer-support" href="https://buymeacoffee.com/oomikaooc" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+        </div>
+        <div class="footer-meta">
+            <span>Powered by <strong>Python</strong> + <strong>Flask</strong></span>
+            <span>-</span>
+            <span>Recherche locale pour fichiers techniques</span>
         </div>
     </div>
 </footer>
