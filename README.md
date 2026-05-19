@@ -1,166 +1,167 @@
 # Boardview Search
 
-Application Flask locale pour indexer, rechercher, afficher et telecharger a la demande des fichiers provenant de sources techniques.
+Boardview Search is a local Flask web app for building a searchable library of boardview, schematic and technical repair files.
 
-Pour le moment, le connecteur implemente est Telegram via une session utilisateur Telethon.
+It can index files from Telegram channels and local folders, search across the indexed metadata, preview compatible files, and download remote files only when needed.
+
+## Features
+
+- Search boardview, schematic, PDF, archive, image and text files from one local web interface.
+- Index public or accessible Telegram channels through a personal Telethon session.
+- Add local folders or UNC/network shares as searchable sources.
+- Preview compatible files directly in the browser: PDF, images and text.
+- Download Telegram files on demand instead of downloading full channels up front.
+- Store downloaded files outside Flask static folders.
+
+## Requirements
+
+- Python 3.11 or newer
+- A Telegram account
+- Telegram API credentials for Telegram indexing:
+  - `TELEGRAM_API_ID`
+  - `TELEGRAM_API_HASH`
+
+## Installation
+
+Clone the repository:
+
+```powershell
+git clone https://github.com/oOMikaOoc/boardview-search.git
+cd boardview-search
+```
+
+Create and activate a virtual environment:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```powershell
+pip install -r requirements.txt
+```
 
 ## Configuration
 
-1. Copie `.env.example` vers `.env`.
-2. Renseigne au minimum :
+Copy the example environment file:
+
+```powershell
+copy .env.example .env
+```
+
+Then edit `.env` and fill in your local settings:
 
 ```text
+SECRET_KEY=change-me
+ADMIN_PASSWORD=
+
 TELEGRAM_API_ID=
 TELEGRAM_API_HASH=
 TELEGRAM_SESSION_NAME=telegram_session
 ```
 
-`TELEGRAM_SESSION_NAME` est simplement le nom du fichier de session Telethon. La valeur par defaut convient dans la plupart des cas.
+The `.env` file is local to each installation. It is created from `.env.example`, then populated by the person running the app with their own Telegram credentials and local preferences.
 
-Les fichiers sont stockes hors `/static`, par defaut dans un dossier unique :
+By default:
 
-```text
-Download
-```
+- application data is stored in `data/`
+- the SQLite database is stored in `data/app.db`
+- downloaded files are stored in `Download/`
+- the Telethon session is stored in `data/telegram_session/`
 
-La session Telethon est stockee dans :
+## Run
 
-```text
-data/telegram_session
-```
-
-En Docker, monte le dossier `/data` ou configure `DATA_PATH=/data`.
-
-## Publication GitHub
-
-Le depot peut contenir le code, les templates, `requirements.txt`, les scripts `.bat`, `README.md`, `.env.example` et `.gitignore`.
-
-Ne publie pas ces elements :
-
-- `.env` : identifiants Telegram et cle Flask locale.
-- `data/` : base SQLite, logs, index, chemins locaux et session Telethon.
-- `Download/` : fichiers telecharges.
-- `__pycache__/`, `.venv/`, `.qodo/` : artefacts locaux.
-
-## Lancer l'application
+Start the app:
 
 ```powershell
 python telegram_boardview_web.py
 ```
 
-Puis ouvrir :
+Open:
 
 ```text
 http://127.0.0.1:5000/
 ```
 
-## Installation sur le PC d'atelier
+## Telegram Login
 
-Copie le dossier complet `TelegramDownload` sur le PC d'atelier, puis lance une premiere fois :
-
-```powershell
-install_atelier.bat
-```
-
-Ce script cree un environnement virtuel local `.venv`, installe les dependances de `requirements.txt`, et cree `.env` depuis `.env.example` s'il manque.
-
-Ensuite, pour demarrer l'application en double-clic :
-
-```powershell
-start_atelier.bat
-```
-
-Le navigateur s'ouvre sur :
-
-```text
-http://127.0.0.1:5000/
-```
-
-Pour conserver l'index, les fichiers deja telecharges et la session Telegram, copie aussi les dossiers :
-
-```text
-data
-Download
-```
-
-## Connexion Telegram
-
-La premiere connexion Telethon peut demander le telephone, le code Telegram et le mot de passe 2FA.
-
-L'admin permet de connecter et tester la session :
+Open the admin settings page:
 
 ```text
 http://127.0.0.1:5000/admin/settings
 ```
 
-Le bouton `Connecter Telegram` lance le flux telephone -> code -> 2FA optionnelle.
+Use `Connecter Telegram` to create the local Telethon session. Telegram may ask for:
 
-Le script CLI reste disponible comme solution de secours :
+- phone number
+- login code
+- two-factor authentication password, if enabled
+
+The CLI login helper is also available:
 
 ```powershell
 python telegram_login.py
 ```
 
-Telethon demandera le numero, le code Telegram et la 2FA si necessaire.
+## Sources
 
-Test direct :
-
-```text
-http://127.0.0.1:5000/admin/telegram/test
-```
-
-## Ajouter une source Telegram
-
-Ouvre :
+Sources are managed from:
 
 ```text
 http://127.0.0.1:5000/admin/sources
 ```
 
-Ajoute un canal Telegram avec son nom public, par exemple :
+### Telegram Source
+
+Add a Telegram channel using its public name or identifier, for example:
 
 ```text
 schematicslaptop
 ```
 
-Definis `max_messages_to_scan` selon la taille du canal. Si vide, la valeur `DEFAULT_TELEGRAM_SEARCH_LIMIT` est utilisee.
+`max_messages_to_scan` controls how many messages are scanned when indexing. If left empty, `DEFAULT_TELEGRAM_SEARCH_LIMIT` from `.env` is used.
 
-## Ajouter une source locale
+### Local Folder Source
 
-Dans `/admin/sources`, ajoute une source de type :
+Add a source of type:
 
 ```text
 Dossier local / UNC
 ```
 
-Exemples :
+Examples:
 
 ```text
 C:\Schemas
-\\serveur\partage\boardviews
+\\server\share\boardviews
 ```
 
-L'indexation locale parcourt les fichiers, enregistre les metadonnees et le chemin local, puis les sert via les routes controlees `/download/<file_id>` et `/view/<file_id>`.
+Local indexing stores file metadata and local paths in the database. Files are then served through the controlled `/download/<file_id>` and `/view/<file_id>` routes.
 
-Le dossier `Download` est ajoute comme source locale par defaut. Si tu copies la base sur un autre PC, cette source par defaut est automatiquement recalee vers le dossier `Download` du PC courant. Les telechargements faits depuis Telegram arrivent aussi directement dans ce dossier, sans sous-dossier par marque.
+The default `Download` folder is added automatically as a local source. If the database is moved to another computer, this default source is updated to point to the current computer's `Download` folder.
 
-## Logique principale
+## How It Works
 
-Recherche :
-- interroge la base locale,
-- indexe les sources Telegram actives,
-- enregistre uniquement les metadonnees,
-- fusionne et dedoublonne les resultats,
-- ne telecharge jamais les fichiers complets.
+Search:
 
-Telechargement :
-- verifie d'abord le stockage local,
-- si absent, telecharge depuis la source distante,
-- stocke le fichier localement,
-- met a jour la base,
-- sert le fichier via `/download/<file_id>`.
+- queries the local database
+- indexes active Telegram sources
+- stores metadata only
+- merges and deduplicates results
+- does not download full files during search
 
-Affichage :
-- passe par `/view/<file_id>`,
-- telecharge a la demande si necessaire,
-- affiche uniquement les types compatibles : PDF, images et textes.
+Download:
+
+- checks local storage first
+- downloads from the remote source only if missing locally
+- stores the file locally
+- updates the database
+- serves the file through `/download/<file_id>`
+
+Preview:
+
+- uses `/view/<file_id>`
+- downloads on demand if needed
+- supports PDF, images and text files
