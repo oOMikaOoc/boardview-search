@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.qodo/
+.env
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.session
+*.session-journal
+downloads_boardviews/
+Download/
+downloaded_hashes.txt

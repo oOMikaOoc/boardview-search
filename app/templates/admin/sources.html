@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set title = "Sources" %}
+
+{% block content %}
+<p><a class="button" href="{{ admin_url('admin.source_add') }}">Ajouter une source</a></p>
+<table>
+    <thead><tr><th>Nom</th><th>Type</th><th>Identifiant</th><th>Etat</th><th>Limite</th><th>Derniere indexation</th><th>Actions</th></tr></thead>
+    <tbody>
+        {% for source in sources %}
+        <tr>
+            <td>{{ source.name }}</td>
+            <td>{{ source.type }}</td>
+            <td>{{ source.identifier }}</td>
+            <td><span class="badge {{ '' if source.enabled else 'off' }}">{{ "active" if source.enabled else "inactive" }}</span></td>
+            <td>{{ source_limit(source) if source.type == "telegram" else "-" }}</td>
+            <td>{{ source.last_indexed_at or "" }}</td>
+            <td>
+                <a href="{{ admin_url('admin.source_edit', source_id=source.id) }}">modifier</a>
+                <a href="{{ admin_url('admin.source_toggle', source_id=source.id) }}">{{ "desactiver" if source.enabled else "activer" }}</a>
+                <a href="{{ admin_url('admin.source_index', source_id=source.id) }}" data-loading="#admin-loading">indexer</a>
+                <a class="error" href="{{ admin_url('admin.source_delete', source_id=source.id) }}">supprimer</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="loading" id="admin-loading">Indexation en cours. Aucun fichier complet n'est telecharge.</div>
+{% endblock %}

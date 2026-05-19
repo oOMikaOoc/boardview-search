@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Boardview Search" }}</title>
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --panel: #fff;
+            --text: #18202a;
+            --muted: #667085;
+            --line: #d6dae1;
+            --accent: #0f766e;
+            --accent-dark: #115e59;
+            --danger: #b42318;
+            --info: #175cd3;
+            --row-alt: #f9fafb;
+            --overlay: rgba(16, 24, 40, 0.38);
+        }
+        body.dark {
+            --bg: #111827;
+            --panel: #1f2937;
+            --text: #e5e7eb;
+            --muted: #a5b4c7;
+            --line: #374151;
+            --accent: #2dd4bf;
+            --accent-dark: #14b8a6;
+            --danger: #f87171;
+            --info: #93c5fd;
+            --row-alt: #172033;
+            --overlay: rgba(0, 0, 0, 0.58);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 15px;
+        }
+        main { width: min(1220px, calc(100% - 32px)); margin: 26px auto; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        h1 { margin: 0; font-size: 27px; }
+        h2 { margin: 24px 0 10px; font-size: 19px; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        a { color: var(--accent); font-weight: 650; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .button, button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            border: 0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            background: var(--accent);
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .button:hover, button:hover { background: var(--accent-dark); text-decoration: none; }
+        .button.secondary { background: #344054; }
+        .button.danger { background: var(--danger); }
+        button.compact, .button.compact {
+            min-height: 30px;
+            padding: 5px 10px;
+            font-size: 13px;
+        }
+        .button.view-link, .view-link,
+        .button.open-folder-link, .open-folder-link {
+            background: #0284c7;
+        }
+        .button.view-link:hover, .view-link:hover,
+        .button.open-folder-link:hover, .open-folder-link:hover {
+            background: #0369a1;
+        }
+        .button.fetch-link, .fetch-link {
+            width: 42px;
+            min-width: 42px;
+            padding: 8px;
+            background: #475467;
+        }
+        .button.fetch-link:hover, .fetch-link:hover {
+            background: #344054;
+        }
+        .download-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .button-row {
+            display: flex;
+            gap: 8px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .grid { display: grid; gap: 12px; }
+        .stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+        .stat strong { display: block; font-size: 27px; }
+        form.inline, form.search {
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) 190px auto;
+            gap: 10px;
+            align-items: end;
+        }
+        label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 650; }
+        input, select {
+            width: 100%;
+            min-height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font: inherit;
+            color: var(--text);
+            background: var(--panel);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+            table-layout: fixed;
+        }
+        th, td {
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background: color-mix(in srgb, var(--panel) 86%, var(--line)); color: var(--text); font-size: 13px; }
+        tbody tr:nth-child(even) { background: var(--row-alt); }
+        tbody tr:hover { background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+        tr:last-child td { border-bottom: 0; }
+        td, th { overflow-wrap: anywhere; }
+        .results-table th:nth-child(1) { width: 43%; }
+        .results-table th:nth-child(2) { width: 17%; }
+        .results-table th:nth-child(3) { width: 15%; }
+        .results-table th:nth-child(4) { width: 10%; }
+        .results-table th:nth-child(5) { width: 9%; }
+        .results-table th:nth-child(6) { width: 6%; }
+        .caption-cell {
+            max-height: 72px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .actions-cell {
+            text-align: right;
+            white-space: nowrap;
+            overflow-wrap: normal;
+        }
+        .actions-cell .button {
+            min-width: 52px;
+            justify-content: center;
+        }
+        .muted { color: var(--muted); }
+        .badge {
+            display: inline-flex;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #e6f4f1;
+            color: #0f766e;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .badge.off { background: #f2f4f7; color: #667085; }
+        .notice { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+        .error { color: var(--danger); }
+        .telegram-count {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--panel) 88%, var(--line));
+        }
+        .telegram-count-item {
+            display: grid;
+            gap: 2px;
+            min-width: 210px;
+        }
+        .telegram-count strong {
+            font-size: 18px;
+        }
+        .telegram-count.hidden {
+            display: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid #b2ddff;
+            border-radius: 8px;
+            background: #eff8ff;
+            color: var(--info);
+        }
+        body.dark .loading {
+            border-color: #2563eb;
+            background: #172554;
+            color: #bfdbfe;
+        }
+        .loading.visible { display: block; }
+        .loading.complete .spinner { display: none; }
+        .loading-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #b2ddff;
+            border-top-color: var(--info);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            flex: 0 0 auto;
+        }
+        body.dark .spinner {
+            border-color: #1e40af;
+            border-top-color: #93c5fd;
+        }
+        .progress {
+            height: 7px;
+            margin-top: 12px;
+            overflow: hidden;
+            background: #d1e9ff;
+            border-radius: 999px;
+        }
+        body.dark .progress {
+            background: #1e3a8a;
+        }
+        .progress span {
+            display: block;
+            width: 42%;
+            height: 100%;
+            background: var(--info);
+            border-radius: inherit;
+            animation: slide 1.1s ease-in-out infinite;
+        }
+        body.dark .progress span {
+            background: #60a5fa;
+        }
+        .progress.determinate span {
+            width: 0;
+            animation: none;
+            transition: width 0.25s ease;
+        }
+        .theme-toggle {
+            min-height: 30px;
+            padding: 5px 9px;
+            background: #344054;
+        }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: var(--overlay);
+            padding: 18px;
+        }
+        .modal-backdrop.visible { display: flex; }
+        .modal {
+            width: min(420px, 100%);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            color: var(--text);
+            padding: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+        }
+        .modal-title {
+            margin: 0 0 8px;
+            font-weight: 800;
+            font-size: 18px;
+        }
+        .toast {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 45;
+            display: none;
+            max-width: min(460px, calc(100% - 36px));
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            color: var(--text);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+        }
+        .toast.visible { display: block; }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes slide {
+            0% { transform: translateX(-120%); }
+            100% { transform: translateX(250%); }
+        }
+        @media (max-width: 760px) {
+            header, form.inline, form.search { grid-template-columns: 1fr; display: grid; }
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
+            tr { border-bottom: 1px solid var(--line); }
+            td { border-bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <h1>{{ title or "Boardview Search" }}</h1>
+        <nav>
+            <a href="{{ url_for('search.index') }}">Recherche</a>
+            <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+            <a href="{{ url_for('admin.sources') }}">Sources</a>
+            <a href="{{ url_for('admin.settings') }}">Settings</a>
+            <button class="theme-toggle" type="button" id="theme-toggle">Dark</button>
+        </nav>
+    </header>
+    {% block content %}{% endblock %}
+</main>
+<div class="modal-backdrop" id="download-modal" role="status" aria-live="polite">
+    <div class="modal">
+        <p class="modal-title">Telechargement en cours</p>
+        <div class="loading-row">
+            <span class="spinner"></span>
+            <span>Merci de patienter. Le fichier est verifie localement puis recupere si besoin.</span>
+        </div>
+        <div class="progress"><span></span></div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme === "dark") document.body.classList.add("dark");
+    const themeToggle = document.getElementById("theme-toggle");
+    if (themeToggle) {
+        const refreshThemeLabel = () => {
+            themeToggle.textContent = document.body.classList.contains("dark") ? "Light" : "Dark";
+        };
+        refreshThemeLabel();
+        themeToggle.addEventListener("click", () => {
+            document.body.classList.toggle("dark");
+            localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+            refreshThemeLabel();
+        });
+    }
+
+    function humanSize(size) {
+        if (!size) return "";
+        const units = ["o", "Ko", "Mo", "Go", "To"];
+        let value = Number(size);
+        for (const unit of units) {
+            if (value < 1024 || unit === units[units.length - 1]) return `${value.toFixed(1)} ${unit}`;
+            value = value / 1024;
+        }
+        return `${size} o`;
+    }
+
+    function escapeHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, (char) => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        }[char]));
+    }
+
+    function actionMarkup(file) {
+        if (file.action_kind === "fetch") {
+            return '<span class="download-icon" aria-hidden="true">&#x2B07;</span><span class="sr-only">Telecharger</span>';
+        }
+        return escapeHtml(file.action_label);
+    }
+
+    function renderAsyncResults(query, results) {
+        const target = document.getElementById("async-results");
+        const template = document.getElementById("results-template");
+        if (!target || !template) return;
+        const fragment = template.content.cloneNode(true);
+        fragment.querySelector("[data-summary]").textContent = `${results.length} resultat(s) pour "${query}". La recherche indexe les metadonnees, elle ne telecharge pas les fichiers.`;
+        const tbody = fragment.querySelector("tbody");
+        results.forEach((file) => {
+            const date = file.message_date ? file.message_date.slice(0, 10) : "";
+            const actionClass = file.action_kind === "fetch" ? "fetch-link" : file.action_kind === "open_folder" ? "open-folder-link" : "view-link";
+            const target = file.action_kind === "view" ? ` target="_blank"` : "";
+            tbody.insertAdjacentHTML("beforeend", `
+                <tr>
+                    <td><strong>${escapeHtml(file.filename)}</strong><br><span class="muted">${escapeHtml(file.extension)}</span></td>
+                    <td><span class="badge">${escapeHtml(file.source_type)}</span><br>${escapeHtml(file.source_name)}</td>
+                    <td>${escapeHtml(file.status)}</td>
+                    <td>${humanSize(file.size)}</td>
+                    <td>${date}</td>
+                    <td class="actions-cell"><a class="button action-link ${actionClass}" href="${escapeHtml(file.action_url)}"${target} title="${file.action_kind === "fetch" ? "Telecharger" : escapeHtml(file.action_label)}" aria-label="${file.action_kind === "fetch" ? "Telecharger" : escapeHtml(file.action_label)}">${actionMarkup(file)}</a></td>
+                </tr>
+            `);
+        });
+        target.replaceChildren(fragment);
+        wireActionLinks();
+    }
+
+    function setSearchComplete(detailText, button) {
+        const loading = document.getElementById("search-loading");
+        const detail = document.getElementById("search-progress-detail");
+        const bar = document.getElementById("search-progress-bar");
+        if (loading) loading.classList.add("complete");
+        if (detail && detailText) detail.textContent = detailText;
+        if (bar) bar.style.width = "100%";
+        if (button) {
+            button.disabled = false;
+            button.textContent = "Rechercher";
+            button.style.cursor = "";
+        }
+        document.body.style.cursor = "";
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add("visible");
+        window.setTimeout(() => toast.classList.remove("visible"), 3200);
+    }
+
+    function bindOpenFolderLinks() {
+        document.querySelectorAll(".open-folder-link").forEach((link) => {
+            if (link.dataset.boundOpenFolder) return;
+            link.dataset.boundOpenFolder = "1";
+            link.addEventListener("click", async (event) => {
+                event.preventDefault();
+                const modal = document.getElementById("download-modal");
+                if (modal) modal.classList.add("visible");
+                try {
+                    const response = await fetch(link.href, { headers: { "X-Requested-With": "fetch" } });
+                    let message = "";
+                    if (response.headers.get("content-type")?.includes("application/json")) {
+                        const payload = await response.json();
+                        message = payload.message || "";
+                    } else {
+                        message = await response.text();
+                    }
+                    if (!response.ok) throw new Error(message || "Ouverture impossible");
+                    showToast(message || "Dossier ouvert");
+                } catch (error) {
+                    alert(error.message);
+                } finally {
+                    if (modal) modal.classList.remove("visible");
+                }
+            });
+        });
+    }
+
+    function wireActionLinks() {
+        document.querySelectorAll(".fetch-link").forEach((link) => {
+            if (link.dataset.boundFetch) return;
+            link.dataset.boundFetch = "1";
+            link.addEventListener("click", (event) => {
+                event.preventDefault();
+                const modal = document.getElementById("download-modal");
+                if (modal) modal.classList.add("visible");
+                fetch(link.href, { method: "POST" })
+                    .then(async (response) => {
+                        const contentType = response.headers.get("content-type") || "";
+                        if (!contentType.includes("application/json")) {
+                            const text = await response.text();
+                            throw new Error(text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || "Reponse inattendue du serveur");
+                        }
+                        const payload = await response.json();
+                        if (!response.ok) throw new Error(payload.error || "Erreur telechargement");
+                        const nextLabel = payload.action_label || "Voir";
+                        const row = link.closest("tr");
+                        const nextLink = link.cloneNode(false);
+                        nextLink.textContent = nextLabel;
+                        nextLink.title = nextLabel;
+                        nextLink.setAttribute("aria-label", nextLabel);
+                        nextLink.href = payload.action_url;
+                        nextLink.className = `button action-link ${payload.action_kind === "view" ? "view-link" : "open-folder-link"}`;
+                        if (payload.action_kind === "view") {
+                            nextLink.target = "_blank";
+                        } else {
+                            nextLink.removeAttribute("target");
+                        }
+                        link.replaceWith(nextLink);
+                        if (row && row.children[2]) row.children[2].textContent = payload.status || "local disponible";
+                        wireActionLinks();
+                    })
+                    .catch((error) => {
+                        alert(error.message);
+                    })
+                    .finally(() => {
+                        if (modal) modal.classList.remove("visible");
+                });
+            });
+        });
+        bindOpenFolderLinks();
+    }
+
+    const searchForm = document.getElementById("search-form");
+    if (searchForm) {
+        searchForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const loading = document.getElementById("search-loading");
+            const detail = document.getElementById("search-progress-detail");
+            const bar = document.getElementById("search-progress-bar");
+            const button = event.submitter || searchForm.querySelector("button");
+            const query = new FormData(searchForm).get("q");
+            const formData = new FormData(searchForm);
+            if (button && button.name) formData.set(button.name, button.value);
+            loading.classList.add("visible");
+            loading.classList.remove("complete");
+            detail.textContent = formData.get("reindex") === "1"
+                ? "Demarrage : reindexation des sources actives..."
+                : "Recherche rapide dans l'index existant...";
+            bar.style.width = "0%";
+            button.disabled = true;
+            button.textContent = button.dataset.loadingText || "Recherche...";
+            document.body.style.cursor = "progress";
+
+            try {
+                const response = await fetch(searchForm.dataset.startUrl, { method: "POST", body: formData });
+                const started = await response.json();
+                if (!response.ok) throw new Error(started.error || "Recherche impossible");
+
+                const poll = window.setInterval(async () => {
+                    const statusResponse = await fetch(started.status_url);
+                    const job = await statusResponse.json();
+                    if (job.detail) detail.textContent = job.detail;
+                    bar.style.width = `${job.percent || 0}%`;
+
+                    if (job.status === "done") {
+                        window.clearInterval(poll);
+                        setSearchComplete(job.detail, button);
+                        renderAsyncResults(query, job.results || []);
+                    }
+
+                    if (job.status === "error") {
+                        window.clearInterval(poll);
+                        setSearchComplete(job.error || "Erreur pendant la recherche", button);
+                    }
+                }, 500);
+            } catch (error) {
+                setSearchComplete(error.message, button);
+            }
+        });
+    }
+
+    document.querySelectorAll("[data-loading-target]").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const target = document.querySelector(form.dataset.loadingTarget);
+            if (target) target.classList.add("visible");
+            form.querySelectorAll("button").forEach((button) => {
+                button.disabled = true;
+                button.textContent = button.dataset.loadingText || "En cours...";
+            });
+            window.requestAnimationFrame(() => {
+                window.setTimeout(() => form.submit(), 80);
+            });
+        });
+    });
+    document.querySelectorAll("a[data-loading]").forEach((link) => {
+        link.addEventListener("click", () => {
+            const target = document.querySelector(link.dataset.loading);
+            if (target) target.classList.add("visible");
+            link.textContent = link.dataset.loadingText || "En cours...";
+        });
+    });
+
+    const sourceType = document.getElementById("source-type");
+    const sourceIdentifier = document.getElementById("source-identifier");
+    const telegramCountBox = document.getElementById("telegram-count-box");
+    const telegramCountValue = document.getElementById("telegram-count-value");
+    const telegramCountDetail = document.getElementById("telegram-count-detail");
+    const telegramCountRefresh = document.getElementById("telegram-count-refresh");
+    function syncTelegramCountVisibility() {
+        if (!sourceType || !telegramCountBox) return;
+        telegramCountBox.classList.toggle("hidden", sourceType.value !== "telegram");
+    }
+    function formatCount(value) {
+        return new Intl.NumberFormat("fr-FR").format(Number(value || 0));
+    }
+    if (sourceType) {
+        sourceType.addEventListener("change", syncTelegramCountVisibility);
+        syncTelegramCountVisibility();
+    }
+    if (telegramCountRefresh && telegramCountBox && sourceIdentifier) {
+        telegramCountRefresh.addEventListener("click", async () => {
+            const identifier = sourceIdentifier.value.trim();
+            if (!identifier) {
+                if (telegramCountDetail) telegramCountDetail.textContent = "Renseigne un identifiant Telegram.";
+                return;
+            }
+            const url = new URL(telegramCountBox.dataset.countUrl, window.location.origin);
+            url.searchParams.set("identifier", identifier);
+            telegramCountRefresh.disabled = true;
+            telegramCountRefresh.textContent = "Comptage...";
+            if (telegramCountDetail) telegramCountDetail.textContent = "";
+            try {
+                const response = await fetch(url);
+                const payload = await response.json();
+                if (!response.ok) throw new Error(payload.error || "Comptage impossible");
+                if (telegramCountValue) telegramCountValue.textContent = formatCount(payload.count);
+                if (telegramCountDetail) telegramCountDetail.textContent = "Total recupere depuis Telegram.";
+            } catch (error) {
+                if (telegramCountValue) telegramCountValue.textContent = "indisponible";
+                if (telegramCountDetail) telegramCountDetail.textContent = error.message;
+            } finally {
+                telegramCountRefresh.disabled = false;
+                telegramCountRefresh.textContent = "Actualiser";
+            }
+        });
+    }
+    wireActionLinks();
+</script>
+</body>
+</html>

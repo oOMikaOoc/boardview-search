@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% set title = "Admin" %}
+
+{% block content %}
+<section class="grid stats">
+    <div class="panel stat"><strong>{{ stats.sources }}</strong><span class="muted">sources</span></div>
+    <div class="panel stat"><strong>{{ stats.active_sources }}</strong><span class="muted">sources actives</span></div>
+    <div class="panel stat"><strong>{{ stats.files }}</strong><span class="muted">fichiers indexes</span></div>
+    <div class="panel stat"><strong>{{ stats.downloaded }}</strong><span class="muted">fichiers telecharges</span></div>
+</section>
+
+<p><a class="button secondary" href="{{ admin_url('admin.cleanup_local') }}">Nettoyer les fichiers absents</a></p>
+
+<h2>Derniers fichiers indexes</h2>
+<table>
+    <thead><tr><th>Fichier</th><th>Source</th><th>Statut</th><th>Maj</th></tr></thead>
+    <tbody>
+        {% for file in latest_files %}
+        <tr><td>{{ file.filename }}</td><td>{{ file.source.name if file.source else "" }}</td><td>{{ file|status_label }}</td><td>{{ file.updated_at }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Derniers telechargements</h2>
+<table>
+    <thead><tr><th>Fichier ID</th><th>Action</th><th>Source</th><th>Date</th></tr></thead>
+    <tbody>
+        {% for item in latest_downloads %}
+        <tr><td>{{ item.file_id }}</td><td>{{ item.action }}</td><td>{{ item.source }}</td><td>{{ item.created_at }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Erreurs recentes</h2>
+<table>
+    <thead><tr><th>Date</th><th>Message</th></tr></thead>
+    <tbody>
+        {% for item in errors %}
+        <tr><td>{{ item.created_at }}</td><td class="error">{{ item.message }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

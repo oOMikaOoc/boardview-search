@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% set title = "Test Telegram" %}
+
+{% block content %}
+<section class="panel">
+    {% if result.ok %}
+        <p><span class="badge">connecte</span> {{ result.user }}</p>
+    {% else %}
+        <p class="error">Non connecte : {{ result.error }}</p>
+    {% endif %}
+</section>
+{% endblock %}

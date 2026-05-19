@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% set title = "Recherche multi-sources" %}
+
+{% block content %}
+<section class="panel">
+    <form class="search" method="get" action="{{ url_for('search.index') }}" id="search-form" data-start-url="{{ url_for('search.search_start') }}">
+        <label>
+            Mots-cles
+            <input name="q" value="{{ query }}" placeholder="RTX 3090" autofocus>
+        </label>
+        <label>
+            Mode
+            <select name="mode">
+                <option value="all" {% if mode != "local" %}selected{% endif %}>Toutes sources</option>
+                <option value="local" {% if mode == "local" %}selected{% endif %}>Locaux uniquement</option>
+            </select>
+        </label>
+        <div class="button-row">
+            <button type="submit" name="reindex" value="0" data-loading-text="Recherche...">Rechercher</button>
+            <button class="secondary" type="submit" name="reindex" value="1" data-loading-text="Reindexation...">Reindexer + rechercher</button>
+        </div>
+    </form>
+    <div class="loading" id="search-loading">
+        <div class="loading-row">
+            <span class="spinner"></span>
+            <span id="search-progress-detail">Recherche en cours : base locale, sources Telegram actives, fusion et dedoublonnage.</span>
+        </div>
+        <div class="progress determinate"><span id="search-progress-bar"></span></div>
+    </div>
+</section>
+
+<section id="async-results"></section>
+
+{% if error %}
+    <p class="notice error">{{ error }}</p>
+{% endif %}
+
+{% if query %}
+    <p class="muted">{{ results|length }} resultat(s) pour "{{ query }}". La recherche indexe les metadonnees, elle ne telecharge pas les fichiers.</p>
+{% endif %}
+
+{% if results %}
+<table class="results-table">
+    <thead>
+        <tr>
+            <th>Fichier</th>
+            <th>Source</th>
+            <th>Statut</th>
+            <th>Taille</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for file in results %}
+        <tr>
+            <td>
+                <strong>{{ file.filename }}</strong><br>
+                <span class="muted">{{ file.extension }}</span>
+            </td>
+            <td><span class="badge">{{ file.source_type }}</span><br>{{ file.source_name }}</td>
+            <td>{{ file.status }}</td>
+            <td>{{ file.size|human_size }}</td>
+            <td>{{ file.message_date.strftime("%Y-%m-%d") if file.message_date else "" }}</td>
+            <td class="actions-cell">
+                <a
+                    class="button action-link {% if file.action_kind == 'fetch' %}fetch-link{% elif file.action_kind == 'open_folder' %}open-folder-link{% else %}view-link{% endif %}"
+                    href="{{ file.action_url }}"
+                    title="{{ 'Telecharger' if file.action_kind == 'fetch' else file.action_label }}"
+                    aria-label="{{ 'Telecharger' if file.action_kind == 'fetch' else file.action_label }}"
+                    {% if file.action_kind == 'view' %}target="_blank"{% endif %}
+                >
+                    {%- if file.action_kind == 'fetch' -%}
+                        <span class="download-icon" aria-hidden="true">&#x2B07;</span><span class="sr-only">Telecharger</span>
+                    {%- else -%}
+                        {{ file.action_label }}
+                    {%- endif -%}
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif query and not error %}
+    <p class="notice">Aucun fichier trouve. Ajoute une source Telegram ou augmente sa limite d'indexation.</p>
+{% endif %}
+
+<template id="results-template">
+    <p class="muted" data-summary></p>
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Fichier</th>
+                <th>Source</th>
+                <th>Statut</th>
+                <th>Taille</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</template>
+{% endblock %}

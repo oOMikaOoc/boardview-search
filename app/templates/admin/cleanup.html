@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% set title = "Nettoyage index" %}
+
+{% block content %}
+<section class="panel">
+    <p>{{ result.cleaned }} entree(s) nettoyee(s) sur {{ result.checked }} fichier(s) verifie(s).</p>
+    <p class="muted">Les fichiers locaux absents sont retires de l'index. Les fichiers Telegram absents du disque restent indexes mais repassent en statut distant.</p>
+    <p><a class="button" href="{{ admin_url('admin.dashboard') }}">Retour admin</a></p>
+</section>
+{% endblock %}

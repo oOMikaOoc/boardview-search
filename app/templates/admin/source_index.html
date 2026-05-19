@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% set title = "Indexation source" %}
+
+{% block content %}
+<section class="panel">
+    <p><strong>{{ source.name }}</strong></p>
+    <p>{{ result.indexed }} fichier(s) indexes, {{ result.created }} nouveau(x), limite {{ result.limit }} messages.</p>
+    <p><a class="button" href="{{ admin_url('admin.sources') }}">Retour sources</a></p>
+</section>
+{% endblock %}

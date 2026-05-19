@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% set title = "Configuration Telegram" %}
+
+{% block content %}
+{% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
+<section class="panel">
+    <form method="post" class="grid">
+        <label>TELEGRAM_API_ID <span class="muted">{{ statuses.TELEGRAM_API_ID }}</span><input name="TELEGRAM_API_ID" value="{{ config.api_id }}"></label>
+        <label>TELEGRAM_API_HASH <span class="muted">{{ statuses.TELEGRAM_API_HASH }}</span><input name="TELEGRAM_API_HASH" placeholder="laisser vide pour conserver"></label>
+        <details>
+            <summary>Parametre avance</summary>
+            <label>TELEGRAM_SESSION_NAME <span class="muted">{{ statuses.TELEGRAM_SESSION_NAME }}</span><input name="TELEGRAM_SESSION_NAME" value="{{ config.session_name }}"></label>
+            <p class="muted">Nom du fichier de session Telethon. Garde la valeur par defaut sauf si tu veux plusieurs sessions separees.</p>
+        </details>
+        <button type="submit">Enregistrer</button>
+    </form>
+</section>
+<p>
+    <a class="button secondary" href="{{ admin_url('admin.telegram_test') }}">Tester la connexion Telegram</a>
+    <a class="button" href="{{ admin_url('admin.telegram_login') }}">Connecter Telegram</a>
+</p>
+{% endblock %}

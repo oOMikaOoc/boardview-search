@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set title = "Source" %}
+
+{% block content %}
+<section class="panel">
+    <form method="post" class="grid">
+        <label>
+            Type
+            <select name="type" id="source-type">
+                <option value="telegram" {% if not source or source.type == "telegram" %}selected{% endif %}>Telegram</option>
+                <option value="local_folder" {% if source and source.type == "local_folder" %}selected{% endif %}>Dossier local / UNC</option>
+            </select>
+        </label>
+        <label>Nom<input name="name" value="{{ source.name if source else '' }}" required></label>
+        <label>Identifiant / chemin<input id="source-identifier" name="identifier" value="{{ source.identifier if source else '' }}" placeholder="schematicslaptop, @canal, C:\Schemas ou \\serveur\share" required></label>
+        <label>Messages Telegram a scanner<input name="max_messages_to_scan" type="number" min="0" step="100" value="{{ source.max_messages_to_scan if source else '' }}" placeholder="defaut .env, ignore pour local"></label>
+        <div class="telegram-count" id="telegram-count-box" data-count-url="{{ admin_url('admin.telegram_message_count') }}">
+            <div class="telegram-count-item">
+                <span class="muted">Messages disponibles dans le canal</span>
+                <strong id="telegram-count-value">
+                    {% if telegram_count is not none %}
+                        {{ "{:,}".format(telegram_count).replace(",", " ") }}
+                    {% elif telegram_count_error %}
+                        indisponible
+                    {% else %}
+                        -
+                    {% endif %}
+                </strong>
+            </div>
+            <div class="telegram-count-item">
+                <span class="muted">Messages avec fichier indexes</span>
+                <strong>
+                    {% if telegram_indexed_count is not none %}
+                        {{ "{:,}".format(telegram_indexed_count).replace(",", " ") }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </strong>
+            </div>
+            {% if telegram_coverage is not none %}
+                <span class="badge">{{ telegram_coverage }} %</span>
+            {% endif %}
+            <button class="secondary compact" type="button" id="telegram-count-refresh">Actualiser</button>
+            <span class="muted" id="telegram-count-detail">
+                {% if telegram_count_error %}{{ telegram_count_error }}{% endif %}
+            </span>
+        </div>
+        <label><input name="enabled" type="checkbox" value="1" {% if not source or source.enabled %}checked{% endif %}> Active</label>
+        <button type="submit">Enregistrer</button>
+    </form>
+</section>
+{% endblock %}

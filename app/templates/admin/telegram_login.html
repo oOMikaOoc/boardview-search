@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% set title = "Connexion Telegram" %}
+
+{% block content %}
+<section class="panel">
+    <p class="muted">Cette etape cree ou reutilise la session Telethon persistante dans le dossier configure. Telegram enverra un code sur ton compte.</p>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post" class="grid">
+        <label>Numero de telephone Telegram<input name="phone" placeholder="+336..." required></label>
+        <button type="submit">Envoyer le code</button>
+    </form>
+</section>
+{% endblock %}
