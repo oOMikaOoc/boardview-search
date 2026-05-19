@@ -4,6 +4,8 @@ Boardview Search est une application web locale en Flask pour créer une bibliot
 
 L'application peut indexer des fichiers depuis des canaux Telegram et des dossiers locaux, rechercher dans les métadonnées, prévisualiser les fichiers compatibles, et télécharger les fichiers distants uniquement à la demande.
 
+Note de transparence : à l'ère de l'IA, une partie de ce projet a été vibe codé avec l'aide d'assistants IA, puis adaptée, testée et utilisée sur des besoins réels de réparation.
+
 ## Fonctionnalités
 
 - Recherche de fichiers boardview, schémas, PDF, archives, images et textes depuis une interface web locale.
