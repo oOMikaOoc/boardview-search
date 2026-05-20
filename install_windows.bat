@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 
-echo Installation de Boardview Search pour le PC d'atelier...
+echo Installation de Boardview Search...
 
 where py >nul 2>nul
 if %ERRORLEVEL%==0 (
@@ -30,5 +30,5 @@ if not exist ".env" (
 
 echo.
 echo Installation terminee.
-echo Lance ensuite start_atelier.bat pour demarrer l'application.
+echo Lance ensuite start_windows.bat pour demarrer l'application.
 pause
